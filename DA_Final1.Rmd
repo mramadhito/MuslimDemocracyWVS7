@@ -1,0 +1,344 @@
+---
+title: "Is Muslim Support for Democracy Lower than Non-Muslim Support? \n Evidence from World Values Survey 7"
+author: "Garda Ramadhito"
+date: "12/26/2020"
+output:
+  pdf_document:
+    keep_tex: true
+    extra_dependencies: rotating
+---
+```{r, include=FALSE}
+options(tinytex.verbose = TRUE)
+```
+
+```{r setup, include=FALSE}
+library("tidyverse")
+library("stargazer")
+setwd("~/QMSS G5015 Data Analysis/Final project")
+wvs7 <- read.csv("wvs7.csv")
+```
+
+```{r, echo=FALSE}
+wvs7_select <- wvs7 %>% 
+  select(Q250, Q289, Q288, Q275, Q249, Q171) %>% 
+  mutate(Democracy = ifelse(Q250 > 0, Q250, NA)) %>% 
+  mutate(Muslim = ifelse(Q289 == 5, 1, 
+                         ifelse(Q289 >= 0 & Q289 != 5, 0, NA))) %>% 
+  mutate(IncomeScale = ifelse(Q288 > 0, Q288, NA)) %>% 
+  mutate(HighestEduc = ifelse(Q275 >= 0 , Q275, NA)) %>% 
+  mutate(WomensRights = ifelse(Q249 >= 0, Q249, NA)) %>% 
+  mutate(ReligAttend = ifelse(Q171 > 0, 8 - Q171, NA)) %>% 
+  select(-c(Q250, Q289, Q288, Q275, Q249, Q171))
+```
+
+**Introduction**
+
+The Arab Spring in 2011 shattered perceptions that authoritarianism was particularly persistent in the Arab world and that Muslim-majority societies had become attuned to dictatorships and skeptical of democracy. Political scientists and Middle East analysts were hopeful that the democratic deficit in the Muslim world seemed to narrow against the rest of the world. Indeed, the fall of major authoritarian regimes such as Egypt's Mubarak regime and Tunisia's Ben Ali regime was followed by seemingly democratic elections that brought about Islamists such as the Muslim Brotherhood and the Ennahda Party into power in Egypt and Tunisia respectively. However, the brief, marginal slide towards democracy in the Middle East and North Africa (MENA) post-Arab Spring regressed toward instability marked by civil war and counter-revolutions while Turkey, the once-favored model of the secular-democratic Muslim-majority country, started to undergo democratic backsliding as Recep Tayyip Erdogan systematically undermined civil liberties in the country. As we approach the 10th anniversary of the Arab Spring, it is imperative to ask whether the Muslim public support democracy more or less than their non-Muslim peers. 
+
+**Hypotheses**
+
+Before explaining my proposed hypotheses, it is important to state the null hypothesis. In this case, the null hypothesis is that there is no significant difference between the level of support for democracy among Muslims and among non-Muslims. This might mean there is nothing inherent about being Muslim or not that affects one's support for democratic governance or that the historical persistence of authoritarianism and political underdevelopment in Muslim societies has no effect on individual-level support for democracy. 
+
+$H_0$: There is no significant difference between the level of support for democracy among Muslims and among non-Muslims.
+
+My first hypothesis is that Muslims support democracy less than non-Muslims. Because of the failure of the Arab Spring, a large part of the Muslim world might have become more skeptical of democratization and democratic governance. It is probable that the mass death and displacement caused by the civil wars post-Arab Spring has made the idea of democracy not worth fighting for, especially when we look at Syria, Yemen, and Libya, where the 2011 revolutions gave way to still-occurring civil wars. In contrast, authoritarian regimes such as the monarchies of the Gulf Arab states and Erdogan's Turkey have endured and showed stability, which might seem more desirable that the MENA region is in a state of chaos. These experiences would translate to an unfavorable view of democracy on an individual-level basis. 
+
+$H_1$: The level of support for democracy is lower among Muslims than among non-Muslims. 
+
+My second hypothesis is that the level of support for democracy is higher among Muslims with more education than among those with less education. As one gets more educated generally, they are exposed to more perspectives and thus are more receptive to liberal values. As such, Muslims with better education would tend to support democracy more than Muslims who are less educated. 
+
+$H_2$: The level of support for democracy is higher among more educated Muslims than among those with less education.
+
+My third hypothesis is that the level of support for democracy is higher among Muslims who are less religious than among those who are more religious. I hypothesize that more religious Muslims are more inclined to support Islamism, which mandates that any political system must rest on Islamic law and rejects democracy because it is a man-made innovation. In contrast, less religious Muslims tend to be less conservative and more responsive to non-Islamic ideas, including democracy. They are more open to import "Western" ideas such as democracy to their own societies.
+
+$H_3$: The level of support for democracy is higher among less religious Muslims than among more religious Muslims.
+
+**Data source and variables**
+
+The dataset used in this study is the World Values Survey (WVS) Wave 7. The WVS is a survey recording responses from individuals from a diverse set of countries around the world and it asks questions on topics including religion, politics, economic values, views on gender, trust, and other cultural and socioeconomic topics. Survey response collection has been ongoing since January 2017 and will be concluded by July 2020. The current data set was released in July 2020, which makes it relatively "fresh" to analyze. The data set has a large sample size of almost 70,000 with a minimum sample size of 1200 per country. The sample is also ensured to be representative for the each country's population of all residents in the age 18 or older residing in private households. As such, this is a high quality dataset ripe for robust data analysis.
+
+The main dependent variable for this study is the response to the question "How important is it for you to live in a country that is governed democratically?". The response is on a scale from 1 to 10, with 1 being "not at all important" and 10 being "absolutely important". It is recoded as the variable **Democracy** from variable Q250 on the original dataset with responses outside of the scale from 1 to 10 recoded as NA values.
+
+The main independent variables in this study are whether one is Muslim or not, highest level of education attained, and frequency of religious attendance. the The first independent variable is whether one is Muslim or not, recoded as **Muslim** from variable Q289, which is a categorical variable indicating the respondent's religion from no religion to Buddhism to others. It is recoded into a dummy variable with 1 being Muslim and 0 being non-Muslim. As with other variables, all responses outside of the standard choices and responses that do not answer the question will be recoded as NA.
+
+The second independent variable is the highest level of education attained. It is recoded as variable **HighestEduc** from variable Q275 in the dataset. It is actually an ordinal categorical variable, such as 1 being primary level, 3 being upper secondary, 6 being bachelor's, 7 being master's, and 8 being the doctoral level. In this study, for simplicity, this variable will be treated as a continuous variable.
+
+The third independent variable is the frequency of religious attendance. It is the response to the question "Apart from weddings, funerals and christenings, about how often do you attend religious services these days?". It is recoded as variable **ReligAttend** from variable Q171 and the responses are "inverted" so that as it increases in magnitude, it increases in frequency with 0 corresponding to never and 7 corresponding to more than once a week.
+
+The control variables are the respondent's income on a scale and the respondent's belief in the importance of equal rights between men and women in a democracy. The former variable is recoded as **IncomeScale** from variable Q288, which states that 1 is the lowest income group and that 10 is the highest income group. The latter control variable is recoded as **WomensRights** from variable Q249. Responses range from 0, which means, "It is against democracy," to 10, which means, "An essential characteristic of democracy." This variable also acts as an intermediate variable because previous literature has found that support for women's rights among Muslims is a good proxy for support for democracy. This is because support for women's rights are usually an indicator for one's liberalism and support for equality in general, an essential component of democracy. In contrast, patriarchal values are linked to authoritarianism, which rely on the idea of essential inequality and societal hierarchy as the natural order of things.
+
+**Data Analysis**
+
+*Descriptive Statistics*
+
+Table 1 shows the descriptive statistics of the variables in this study. On average, the level of support for democracy is high among respondents of the survey with a mean score of 8.4 a. Even the distribution is located pretty high on the scale, with the 25% percentile at 7 and the 75% percentile at 10. Also, the standard deviation is only This is further supported by Graph 1(a), which visualizes the distribution of support for democracy. The overwhelming majority of responses is 10, which is the maximum, indicating strong support of democracy overall. As for the difference in support for democracy between Muslims and non-Muslims, there is no obvious difference from the box plot in Graph 1(b). The boxes for Muslim and non-Muslim are located at the same values on the scale with the median at 9, the 25th percentile at 7 and the 75th percentile at 10. Table 2 shows that there are more non-Muslims than Muslims in the sample, which is expected. However, we do not know if the proportion matches the overall population without exact figures. The more important question, however, is whether there is a difference in means, which will be explored more in the section covering means comparison.
+
+```{r table1, results='asis', echo=FALSE}
+stargazer(wvs7_select, type = "latex", title = "Descriptive statistics of variables", header = FALSE)
+```
+```{r table2, echo=FALSE, results ='asis'}
+table2 <- table(wvs7_select$Muslim)
+stargazer(as.matrix(table2), header=F, title = "Number of Muslims and non-Muslims in sample")
+```
+
+\begin{center}
+Graph 1: 
+\end{center}
+```{r, echo=FALSE}
+par(mfrow = c(1,2))
+
+hist(wvs7_select$Democracy,
+     xlab = "Importance of Democracy",
+     main = "",
+     cex.axis = 0.8,
+     cex.lab = 0.8,
+     xaxt = "n")
+axis(side = 1, at = seq(1,10,1))
+title(main="(a) How Important Is Democracy?", cex.main = 0.75)
+boxplot(Democracy~Muslim,
+        data=wvs7_select,
+        cex = 0.5,
+        xlab = "Muslim",
+        ylab = "",
+        cex.lab = 0.8,
+        cex.axis = 0.8,
+        outline = TRUE,
+        ylim = c(1,11),
+        main="(b) Importance of Democracy between \n Muslims and Non-Muslims", 
+        cex.main = 0.75)
+title(ylab="Importance of Democracy", 
+      line=2.5, 
+      cex.lab=0.8)
+```
+
+As for the rest of the independent variables, the highest level of education attained by respondents has a mean of 3.41, which indicates that respondents roughly have at least an upper secondary education on average and this is expected since most people have completed a high school education with many also attaining a bachelor's degree.  Respondents' frequency of attending religious services has a mean of 3.95, which indicates moderate frequency at around once a month. The mean income of respondents on a scale of 1 to 10 is 4.76, which means that respondents are on average middle class as expected. Lastly, the mean score for belief in equal rights for men and women in democracies among respondents is 8, which indicates strong support for equal rights across the board.
+
+*Comparison of means using t-test*
+
+To investigate whether there is a significant difference in the level of support for democracy between Muslims and non-Muslims, I ran a two-tailed t-test with unequal variance. The t-test results in Table 3 show that there is indeed a difference as the t-statistic is 11.3, which is large. This difference is statistically significant up to the 99.999% confidence level as the p-value is 8.78e-30, which is extremely small. Thus, based on these results alone, we can reject the null hypothesis that there is no significant difference in the level of support for democracy between Muslims and non-Muslims.
+
+```{r table3, results ='asis', echo=FALSE}
+t_test1 <- t.test(Democracy ~ Muslim, data = wvs7_select, var.equal=FALSE)
+stargazer_htest = function (data, ...) {
+    summary = data.frame(`Test statistic` = data$statistic,
+                         DF = data$parameter,
+                         `p value` = data$p.value,
+                         `Alternative hypothesis` = data$alternative,
+                         `Mean of Group 0` = data$estimate[1],
+                         `Mean of Group 1` = data$estimate[2],
+                         check.names = FALSE)
+    stargazer(summary, flip = TRUE, summary = FALSE,
+              notes = paste(data$method, data$data.name, sep = ': '), ...)
+}
+stargazer_htest(t_test1, header=F, title="Means comparison (t-test) results")
+```
+
+However, using the t-test alone does not adequately answer the research question. We might be able to reject the null hypothesis but the results are extremely simplistic. We can see more parameters that provide more information by using simple regression instead for comparison of means. Additionally, we would like to be able to tell how the difference changes when we account for other independent variables such as educational attainment and religiosity and this can be done with multiple regression models with interaction. 
+
+*Initial model: simple linear regression of* Democracy *on* Muslim
+
+To provide a more comprehensive comparison of means, a simple regression model of support for democracy on whether one is Muslim or not can be performed. First, Table 4 shows that there exists some sort of negative correlation between *Democracy* and *Muslim*, which echoes the results from the t-test earlier. However, the magnitude of 0.45 means that the correlation is not very strong.
+
+```{r table4, echo=FALSE, results='asis', warning=FALSE}
+cor1 <- cor(wvs7_select[c("Democracy","Muslim")], use = "complete.obs")
+
+stargazer(cor1, header = F, title = "Correlation matrix of Democracy and Muslim")
+```
+
+Model 1: *Democracy* = $b_0$ + $b_1$ * *Muslim* + $\varepsilon$
+
+Table 5 shows the output of the simple regression model of *Democracy* on *Muslim* (Model 1). The constant term corresponds to the mean support for democracy among non-Muslims at 8.43. It is statistically significant up to the 99% confidence level. The coefficient estimate for *Muslim* is -0.21. This corresponds to the difference in means in the support for democracy between Muslims and non-Muslims. Adding those figures together would give us the mean support for democracy among Muslims at 8.22, matching the means in Table 3. This estimate is statistically significant up to the 99% confidence level. Graph 2 visualizes the difference and we can see that there is a lower density of points on the right side, causing the lower mean. Even though the magnitude of difference is small, we can safely reject the null hypothesis due to the statistical significance of the estimate and accept the alternative hypothesis $H_1$. 
+
+```{r table5, echo=FALSE, results='asis', warning=FALSE}
+fit_1 <- lm(Democracy ~ Muslim,
+            data = wvs7_select)
+stargazer(fit_1, header=F, title="Simple OLS Regression of Democracy on Muslim")
+```
+\begin{center}
+Graph 2: 
+\end{center}
+```{r, echo=FALSE}
+plot(jitter(wvs7_select$Muslim,0.75),
+     jitter(wvs7_select$Democracy,1),
+     col = "red",
+     cex = 0.1,
+     pch = 16,
+     xlab = "Muslim",
+     ylab = "Importance of Democracy",
+     xaxt = "n")
+title(main="Importance of Democracy between \n Muslims and Non-Muslims", 
+      cex.main = 0.9)
+axis(side = 1, at = c(1,0))
+abline(coef(fit_1), lwd = 2)
+```
+
+Even if we have decided to reject $H_0$, this simple linear regression model is not enough to evaluate how control variables and interactions might affect the relationship between *Democracy* and *Muslims*. This is especially true considering the model's low R-squared value of 0.002, which suggests the low explanatory power of the model in explaining the dependent variable. As such, fitting multiple regression models with the control variables and interactions between *Muslim* and *HigherEduc* and
+
+*Multiple linear regression including continuous independent variables*
+
+To investigate how support for democracy varies among Muslims and non-Muslims, multivariate regression models will be built to include other independent variables as well as interaction terms. However, it is important to first evaluate the correlation matrix of the variables in this model. From Table 6, we can see that the correlation between *Muslim* and *Democracy* is lower compared to the one in Table 4. The correlation now has a value of -0.05, which is still negative but at a much lower magnitude of 0.05, indicating very low correlation. Instead, the variable most correlated to *Democracy* is *WomensRights*, which I stated earlier as a good proxy for support for democracy based on previous literature exploring the link between Islam and democracy. It has a value of 0.31, which means positive correlation between the two variables. However, it is still a relatively weak correlation due to the <0.5 value yet it is still higher than that of other variables, including *HighestEduc* and *ReligAttend*.
+
+
+```{r table6, echo=FALSE, results='asis', warning=FALSE}
+cor2 <- cor(wvs7_select, use = "complete.obs")
+stargazer(cor2, header = F, title = "Correlation matrix of all variables")
+```
+
+Model 2: *Democracy* = $b_0$ + $b_1$ * *Muslim* + $b_2$ * *HighestEduc* +  
+$b_3$ * *ReligAttend* + $b_4$ * *WomensRights*  + $b_5$ * *IncomeScale*  + $\varepsilon$
+
+A multivariate regression model will be fitted with the independent variables of *HighestEduc*, *ReligAttend*, *IncomeScale*, and *WomensRights* in addition to the dependent variable of *Democracy* and the main independent variable of *Muslim*. This model would not include the interaction terms so that we can observe the change in the coefficient estimate of Muslim as well as the coefficient estimates of the other independent variables which would reveal their relationship with the dependent variable.
+
+```{r table7, echo=FALSE, results='asis',warning=FALSE}
+fit_2 <- lm(Democracy ~ Muslim + HighestEduc +
+              ReligAttend + WomensRights + IncomeScale ,
+            data = wvs7_select)
+stargazer(fit_1, fit_2, header = F, title = "Comparison of models 1 and 2")
+```
+
+Table 7 shows the results of the initial multivariate regression. First, the intercept estimate has a value of 6.119. This means that when other independent variables are set at zero, support for democracy has a value of 6.119. This can be interpreted as a non-Muslim respondent who has no formal education, never attends religious services, does not believe in equal rights for men and women in a democracy and belongs to the lowest income group would have moderately strong support for democracy. This estimate is statistically significant up to the 99.99% confidence level.
+
+Second, the coefficient estimate for *Muslim* has a value of -0.083, which means that Muslims support democracy less by 0.083 units compared to non-Muslims, controlling for other factors. This is consistent with our previous findings that the level of support for democracy among Muslims is lower than the level of support among non-Muslims. This estimate is statistically significant up to the 99.99% confidence level.
+
+Third, the coefficient estimate for *HighestEduc* has a value of 0.041, which means that as respondents' highest level of education attained increases by one unit, their support for democracy increases by 0.041 units on average, ceteris paribus. This effect is due to other variables. This estimate is statistically significant up to the 99.99% confidence level. This is consistent with the idea that education has a positive relationship with support for democracy due to exposure to liberal ideas.
+
+Fourth, the coefficient estimate for *ReligAttend* has a value of 0.026, which means that as respondents' frequency of religious attendance increases by one unit, their support for democracy increases by 0.026 units on average, ceteris paribus. This effect is due to other variables. This estimate is statistically significant up to the 99.99% confidence level. This is interesting because this clashes slightly with the idea of more religious Muslims supporting democracy less than less religious Muslims. However, this estimate is for all respondents so $H_3$ should not be discounted yet.
+
+Fifth, the coefficient estimate for *WomensRights* has a value of 0.256, which means that as respondents' level of belief in equal rights for men and women in a democracy increases by one unit, their support for democracy increases by 0.256 units on average, ceteris paribus. This effect is due to other variables. This estimate is statistically significant up to the 99.99% confidence level. Again, this estimate is consistent with the correlation score of the variable and the idea that support for women's rights is a good proxy of support for democracy as suggested by previous literature. 
+
+Lastly, the coefficient estimate for *IncomeScale* has a value of 0.00001, which means that as respondents' level of income increases by one unit, their support for democracy increases by 0.00001 units on average, ceteris paribus. This effect is due to other variables. However, this estimate is not statistically significant due to the large standard error of 0.004. Hence, we cannot conclude that there is a relationship between *IncomeScale* and *Democracy*. This is probably because support for democracy depending on how advantageous democracy is to one's socioeconomic class at one time. For instance, a lower income person would want democracy when democracy can bring about leftists in power such as what happened in Argentina. Otherwise, a higher income person would want democracy when democracy can bring about conservatives into power such as what is happening currently in Venezuela. 
+
+The adjusted R-squared value of model 2 is much higher at 0.100 than model 1's at 0.002. This means that model 2 is indeed a stronger model as it has more explanatory power than model 1. The value is not close to 1 but it is a significant improvement over model 1 and it adequate for a social scientific model based on observational data.
+
+\begin{center}
+Graph 3: 
+\end{center}
+```{r,echo = FALSE}
+plot(jitter(wvs7_select$HighestEduc,1),
+     jitter(wvs7_select$Democracy,1),
+     col = "orange",
+     cex = 0.1,
+     pch = 16,
+     xlab = "Highest Educational Level",
+     ylab = "Importance of Democracy",
+     ylim = c(4,8),
+     xaxt = "n")
+axis(side = 1, at = seq(0,8,1))
+title(main="Importance of Democracy vs. Highest Educational Level 
+      (no interaction)", 
+      cex.main = 0.9)
+abline(a = coef(fit_2)[1], b = coef(fit_2)[3], col = "red")
+abline(a = coef(fit_2)[1] + coef(fit_2)[2], b = coef(fit_2)[3], col = "blue")
+text(x = 6.4, y = 6.7, lab = "Muslim = 0", col = "red")
+text(x = 6.4, y = 5.6, lab = "Muslim = 1", col = "blue")
+```
+
+Graph 3 shows the difference in level of support for democracy between Muslims and non-Muslims with *HighestEduc* as the other independent variable that is continuous, based on model 2. As the model does not include an interaction term, the difference is consistent across all levels of education; Muslims support democracy less than non-Muslims by 0.083 units throughout all levels of education. However, this might not be true in reality. The difference might actually vary across different levels of education. Hence, the next section will cover models with interaction terms. 
+
+*Multiple linear regression models with interaction*
+
+To evaluate $H_2$ and $H_3$, we would like investigate how the difference in the level of support for democracy varies among Muslims and non-Muslims by level of education and frequency of attendance of religious services. To do this, we make two models building off model 2, one with the interaction term *HighestEduc* * *Muslim* (model 3) and another with the interaction term *ReligAttend* * *Muslim* (model 4).
+
+Model 3: *Democracy* = $b_0$ + $b_1$ * *Muslim* + $b_2$ * *HighestEduc* +  
+$b_3$ * *ReligAttend* + $b_4$ * *WomensRights*  + $b_5$ * *IncomeScale*  + 
+$b_6$ * *HighestEduc* * *Muslim* + $\varepsilon$
+
+Model 4: *Democracy* = $b_0$ + $b_1$ * *Muslim* + $b_2$ * *HighestEduc* +  
+$b_3$ * *ReligAttend* + $b_4$ * *WomensRights*  + $b_5$ * *IncomeScale*  + 
+$b_6$ * *ReligAttend* * *Muslim* + $\varepsilon$
+
+```{r, warning=FALSE,include=FALSE}
+fit_3 <- lm(Democracy ~ Muslim + HighestEduc + HighestEduc:Muslim +
+              ReligAttend + WomensRights + IncomeScale ,
+            data = wvs7_select)
+fit_4 <- lm(Democracy ~ Muslim + HighestEduc + ReligAttend:Muslim +
+              ReligAttend + WomensRights + IncomeScale ,
+            data = wvs7_select)
+```
+
+```{r table8, echo=FALSE, results='asis',warning=FALSE}
+stargazer(fit_1, fit_2, fit_3, fit_4, 
+          header = F, 
+          float.env = "sidewaystable", 
+          title = "Comparison of models 1-4 (with interactions)")
+```
+
+Table 8 shows the output from fitting the interaction terms into model 3 and 4, respectively. The results from model 3 and model 4 are not too different from the results from model 2. As for model 3, the coefficient estimate for *Muslim* has a value of -0.118, which means that Muslims support democracy less by 0.118 units compared to non-Muslims, controlling for other factors. This difference only occurs when *HighestEduc* = 0, which means for respondents with no formal education due to the inclusion of the interaction term. This estimate is statistically significant up to the 99.99% confidence level.
+
+The coefficient estimate for *HighestEduc* has a value of 0.038, which means that as respondents' highest level of education attained increases by one unit, their support for democracy increases by 0.038 units on average, ceteris paribus. This only applies to non-Muslim respondents due to the inclusion of the interaction term. This effect is due to other variables. This estimate is statistically significant up to the 99.99% confidence level. 
+
+The coefficient estimate for the interaction term *HighestEduc* * *Muslim* has a value of 0.011, which means that as Muslim respondents' highest level of education attained increases by one unit, their support for democracy increases by 0.049 units on average, ceteris paribus. This only applies to Muslim respondents due to the inclusion of the interaction term. However, this estimate is not statistically significant. Thus, we cannot conclude that there is a meaningful interaction between being Muslim and one's level of education. 
+
+This lack of meaningful interaction means that we cannot evaluate the variation in the difference in level of support of democracy between Muslims and non-Muslims across levels of education. This could be attributed possibly due to the lack of relationship between support for democracy and level of education among Muslims. Further research is needed to establish this lack of relationship, which is present among the broader population. Regardless, this finding fails to satisfy $H_3$.
+
+Table 8 also shows the output for model 4. The coefficient estimate for *Muslim* has a value of -0.214, which means that Muslims support democracy less by 0.214 units compared to non-Muslims, controlling for other factors. This difference only occurs when *ReligAttend* = 0, which means only for respondents who never attend religious services due to the inclusion of the interaction term. This estimate is statistically significant up to the 99.99% confidence level.
+
+The coefficient estimate for *ReligAttend* has a value of 0.017, which means that as non-Muslim respondents' frequency of religious attendance increases by one unit, their support for democracy increases by 0.017 units on average, ceteris paribus. This only applies to non-Muslim respondents due to the inclusion of the interaction term. This effect is due to other variables. This estimate is statistically significant up to the 99.99% confidence level. 
+
+The coefficient estimate for the interaction term *ReligAttend* * *Muslim* has a value of 0.031, which means that as Muslim respondents' frequency of religious attendance increases by one unit, their support for democracy increases by 0.048 units on average, ceteris paribus. This only applies to Muslim respondents due to the inclusion of the interaction term. This estimate is statistically significant up to the 99.99% confidence level. 
+
+\begin{center}
+Graph 4: 
+\end{center}
+```{r, echo=FALSE}
+plot(jitter(wvs7_select$ReligAttend,1),
+     jitter(wvs7_select$Democracy,1),
+     col = "orange",
+     cex = 0.1,
+     pch = 16,
+     xlab = "Frequency of Religious Attendance",
+     ylab = "Importance of Democracy",
+     ylim = c(5,7),
+     yaxt = "n",
+     xlim = c(0,7))
+axis(side = 2, at = c(5,6,7))
+title(main="Importance of Democracy vs. Frequency of Religious Attendance 
+      (with interaction)", 
+      cex.main = 0.9)
+abline(a = coef(fit_4)[1], b = coef(fit_4)[3], col = "red")
+abline(a = coef(fit_4)[1] + coef(fit_4)[2], 
+       b = coef(fit_4)[4] + coef(fit_4)[7], col = "blue")
+text(x = 5.5, y = 6.65, lab = "Muslim = 0", col = "red")
+text(x = 5.5, y = 5.65, lab = "Muslim = 1", col = "blue")
+```
+Because of the statistical significance of this interaction term, we can conclude that there is a meaningful interaction between being Muslim and one's frequency of religious attendance on support for democracy. However, the finding is a surprise; the value of the coefficient on the interaction term suggests that more religious Muslims are more supportive of democracy than less religious Muslims are and that the difference in level of support between Muslims and non-Muslims are more pronounced among the less religious than among the more religious. Graph 4 shows the difference to be larger on the left side than the right side, albeit very subtly when visualized. The difference is more narrow on the right side where more religious respondents are. This is the complete opposite of $H_3$. One potential explanation is that less religious Muslims might be more skeptical of democracy because democracy in the Muslim world has tended to bring about Islamists into power, such as in Egypt, Turkey, and Tunisia. They might fear that Islamists are not truly committed to democracy and that Islamists only use democracy to impose Islamic law and threaten their secular way of life. Ultimately, this finding is unexpected and might provide more clues to the relationship between being Muslim and supporting democracy.
+
+*Final model and diagnostics*
+
+We choose model 4 as the final model because the interaction term *ReligAttend* * *Muslim* is statistically significant and it provides the most "information" out of all the models we have built. It is not an improvement over model 2 because it has the same adjusted R-squared value of 0.100 but it has the extra component of the interaction term that adds more nuance to the relationship between being Muslim and supporting democracy. Otherwise, model 2 is not too different from model 4, as seen in the coefficient estimates in Table 8. 
+
+Final model: *Democracy* = $b_0$ + $b_1$ * *Muslim* + $b_2$ * *HighestEduc* +  
+$b_3$ * *ReligAttend* + $b_4$ * *WomensRights*  + $b_5$ * *IncomeScale*  + 
+$b_6$ * *ReligAttend* * *Muslim* + $\varepsilon$
+
+However, upon performing diagnostics, the model has not satisfied all of the classical assumptions of linear regression. Firstly, Graph 5, the graph for residuals vs. fitted points, does not show an approximately horizontal line at zero. This indicates that there might not be a linear relationship between the independent variables and the dependent variable.
+
+\begin{center}
+Graph 5: 
+\end{center}
+```{r, echo=FALSE}
+plot(fit_4, 1, cex = 0.1, pch = 16)
+```
+
+Secondly, Graph 6, the Scale-Location graph of the square root of standardized residuals against fitted values, shows a downward sloping line from fitted value = 6 to fitted value = 8.5. The line then stays horizontal until fitted value = 9. This suggests that the model violates the assumption of homoscedasticity, or the constant variance in the residual errors. 
+
+\begin{center}
+Graph 6: 
+\end{center}
+```{r, echo=FALSE}
+plot(fit_4, 3, cex = 0.1, pch = 16)
+```
+
+Thirdly, Graph 7, the Normal quantile-quantile (QQ) plot of standardized residuals against theoretical quantiles, shows that the points fail to follow the straight line. This indicates that the errors are not normally distributed as they should be. They only approximately follow the straight line from the -1 theoretical quantile to the 2 theoretical quantile. All of these violations suggest that the model is not appropriate for lower fitted values, calling into question the results of the interaction from the previous section.
+
+\begin{center}
+Graph 7: 
+\end{center}
+```{r, echo=FALSE}
+plot(fit_4, 2, cex = 0.1, pch = 16)
+```
+
+**Conclusion**
+
+The study has revealed that Muslims indeed support democracy less than non-Muslims. However, it is not able to tell how the difference in level of support between Muslims and non-Muslims varies according to level of education and religiosity. This is because the interaction term in model 3 is statistically insignificant and model 4, although having a statistically significant interaction term, is a flawed model that violates several assumptions of linear regression. Regardless, we can safely reject the null hypothesis that there is no significant difference in the level of support between Muslims and non-Muslims. It would be interesting to explore the variation in the difference in level of support for democracy across other variables such as trust in government and even support for women's rights. At the end of the day, this study provides a launching pad into deeper exploration into the relationship between being Muslim and attitudes toward democracy by confirming the pessimistic outlook on democracy in the Muslim world.
+
